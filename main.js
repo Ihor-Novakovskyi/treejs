@@ -10,13 +10,11 @@ function setCanvasElementCenterPosition(targetClass, parentClass) {
     const widthTargetElement = targetElement.scrollWidth;
     const distanceToPositionTargetelementInCenterVertical = (heightParentElement / 2) - (heightTargetElement / 2);
     const distanceToPositionTragetElementInCenterHorisontal = (widthParentElement / 2) - (widthTargetElement / 2);
-    // targetElement.style.transform = `translate(${distanceToPositionTragetElementInCenterHorisontal}px,${distanceToPositionTargetelementInCenterVertical}px)`
-    // targetElement.style.marginLeft = `${distanceToleftEdge}px`;
-    console.log('heightParentElement', heightParentElement)
-    console.log('widthParentElement', widthParentElement)
+   
     return {
         x: distanceToPositionTragetElementInCenterHorisontal,
         y: distanceToPositionTargetelementInCenterVertical,
+        topDistance: parent.getBoundingClientRect().top,
     }
 }
 const offsets = setCanvasElementCenterPosition('canvas-element', 'container');
@@ -78,7 +76,6 @@ document.addEventListener('scroll', scroll)
 
 
 
-// function setCanvasElementCenterPosition(targetClass, parentClass) {
 //     const targetElement = document.querySelector(`.${targetClass}`);
 //     const parent = document.querySelector(`.${parentClass}`);
 //     const prevElement = targetElement.previousElementSibling;
