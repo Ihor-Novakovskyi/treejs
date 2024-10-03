@@ -1,38 +1,55 @@
-body, p{
+body,
+p {
     margin: 0;
 }
-h1{
+
+h1 {
     text-align: center;
 }
-p{  
+
+p {
     text-align: center;
     font-size: 14px;
 }
-.container{
-position:relative;
-overflow: hidden;
-height: 100vh;
-margin-bottom: 500px;
+
+.container {
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+    /* margin-bottom: 100px; */
 }
-.container-1{
+
+.container-1 {
     background-color: aqua;
 
 }
 
-.container-2{
-    background-color:bisque;
+.container-2 {
+    background-color: bisque;
 }
-.canvas-element{
-position:absolute;
-top: 0;
-left: 0;
-height: 10%;
-width: 5%;
-transition: transform 0.8s linear;
+
+.container-3 {
+    margin: 0;
+    background-color: yellow;
 }
-.canvas-element-1{
-background-color: red;
+
+.canvas-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 10%;
+    width: 5%;
+    transition: transform 0.8s linear;
 }
-.canvas-element-2{
-    background-color:blue;
+
+.canvas-element-1 {
+    background-color: red;
+}
+
+.canvas-element-2 {
+    background-color: blue;
+}
+
+.canvas-element-3 {
+    background-color: violet;
 }
