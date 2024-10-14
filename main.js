@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-const CAMERA_POSITION_Z = 4;
-const MAX_SCALE_SHAPE = 2;
+const CAMERA_POSITION_Z = 5;
+const MAX_SCALE_SHAPE = 2.5; //position shape by z axxis when element scale
 const DEFAULT_SCALE = 0;
 const container = [...document.querySelectorAll('.canvas')];
 const typesGeometryElements = [new THREE.BoxGeometry(1, 1, 1, 10, 10, 10),new THREE.CylinderGeometry( 1, 1, 1, 32 ),new THREE.TorusGeometry];
@@ -43,10 +43,11 @@ function create3D(canvas, id) {
         shapeAndOwnProps.scene = scene;
         shapeAndOwnProps.camera = camera;
         shapeAndOwnProps.render = () => renderer.render(scene, camera);
+        shapeAndOwnProps.resetAndStopCameraRotationDuringMouseMove = () => returnDefaultPositionCameraAfterFullScreen(camera);
         shapeAndOwnProps.renderer = renderer;
-        shapeAndOwnProps.updatAfterResize = () => { 
-            updateCamera({camera, renderer})
-        }
+        shapeAndOwnProps.updatAfterResize = () => {
+            updateCamera({ camera, renderer })
+        };
         // renderer.render(scene, camera);
         return shapeAndOwnProps;
     }
@@ -75,31 +76,8 @@ console.log('one click', arrayCoordinateClick);
 console.log('dbl click', arrayCoordinateDbllick);
 console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
 function setPropsForShapeElement({ canvas, shape, camera }) {
-    const pageScroll = window.scrollY;
-
-    canvas.addEventListener('dblclick', (e) => {
-        const pageScroll = window.scrollY;
-        arrayCoordinateDbllick.push({ x: e.clientX, y: e.clientY });
-        const isFullScreen = document.fullscreenElement !== null;
-        if (isFullScreen) {
-            // canvasPostionToTopPageScrollCoordinate.push({fullScreen: true,pageScroll: window.scrollY, canvasDistanceToTop: canvas.getBoundingClientRect().top + pageScroll, scrollToElement: canvas.getBoundingClientRect().top - pageScroll} );
-            // console.log('second')
-
-            document.exitFullscreen();
-            // console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
-
-        } else {
-            // console.log('first')
-            // canvasPostionToTopPageScrollCoordinate.push({fullScreen: false,pageScroll: window.scrollY, canvasDistanceToTop: canvas.getBoundingClientRect().top + pageScroll, scrollToElement: canvas.getBoundingClientRect().top - pageScroll});
-            canvas.requestFullscreen();
-            // console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
-
-        }
-        // поместить в условие когда будет преключение из полного режима в неполный
-        // const canvasDistanceToTop = canvas.getBoundingClientRect().top + pageScroll;
-        // const pageScroll = window.scrollY;
-    })
-    return {
+    const pageScroll = window.scrollY; 
+    const shapeProps = {
         positionProps: {
             startPositionX: -10,
             startPositionY: 4,
@@ -112,6 +90,40 @@ function setPropsForShapeElement({ canvas, shape, camera }) {
         camera,
         topDistanceToCanvasElement: canvas.getBoundingClientRect().top + pageScroll,// исправить на канвас а чилдрен єто сама фигура
     }
+
+    canvas.addEventListener('mousemove', (e) => { 
+        const {clientX, clientY} = e;
+        const { isShapeInCenter } = shapeProps;
+        const canvasInFullScreen = document.fullscreenElement === canvas;
+        isShapeInCenter && canvasInFullScreen ? moveCameraDuringMouseMoveInFullscreen({camera, clientX, clientY}) : void 0;
+        console.log('isShapeInCenter && canvasInFullScreen', isShapeInCenter && canvasInFullScreen);
+    })
+    canvas.addEventListener('dblclick', (e) => {
+        const { isShapeInCenter } = shapeProps;
+        const pageScroll = window.scrollY;
+        arrayCoordinateDbllick.push({ x: e.clientX, y: e.clientY });
+        const isFullScreen = document.fullscreenElement !== null;
+        if (isFullScreen) {
+            // canvasPostionToTopPageScrollCoordinate.push({fullScreen: true,pageScroll: window.scrollY, canvasDistanceToTop: canvas.getBoundingClientRect().top + pageScroll, scrollToElement: canvas.getBoundingClientRect().top - pageScroll} );
+            // console.log('second')
+
+            document.exitFullscreen();
+            // console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
+
+        } else {
+            console.log('isShapeInCenter', isShapeInCenter)
+            // console.log('first')
+            // canvasPostionToTopPageScrollCoordinate.push({fullScreen: false,pageScroll: window.scrollY, canvasDistanceToTop: canvas.getBoundingClientRect().top + pageScroll, scrollToElement: canvas.getBoundingClientRect().top - pageScroll});
+            isShapeInCenter ? canvas.requestFullscreen() : void 0;
+            // console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
+
+        }
+        // поместить в условие когда будет преключение из полного режима в неполный
+        // const canvasDistanceToTop = canvas.getBoundingClientRect().top + pageScroll;
+        // const pageScroll = window.scrollY;
+    })
+    return shapeProps;
+    
 }
 function updatePropertyOfDistanceToCanvasElementAfterWindowResize(elementWithProps) { 
     const pageScroll = window.scrollY;
@@ -144,7 +156,8 @@ function updateShapeSetsAndRenderSets() {
     // Поэтому при ресайзе кона мы видим как у нас при уменьшении окна - shape свдигаются в центр
     // и при увелечнии окна - shape сдвигаются в верхнюю часть элемента канвас
     
-    containerWithRenderShapesAndProps.forEach(({ canvas,renderer, camera }) => { 
+    containerWithRenderShapesAndProps.forEach(({ canvas, renderer, camera, resetAndStopCameraRotationDuringMouseMove }) => { 
+        resetAndStopCameraRotationDuringMouseMove();
         // console.log('canvas', canvas)
         // canvas.style.height = `${window.innerHeight}px`; // далает тоже самое что и renderer.setSize - но эта функция изменяет больше облать видимости. Это видно при полном екране
         // canvas.style.width = `${window.innerWidth}px`;// далает тоже самое что и renderer.setSize - но эта функция изменяет больше облать видимости. Это видно при полном екране
@@ -302,7 +315,7 @@ function setAnimationProps(shapeWithProps, delta) {
     const { shape, render} = shapeWithProps;
     const step =  0.01 * delta / 10;
     shape.rotation.y += step;
-     shape.rotation.x += step ;
+    shape.rotation.x += step ;
 
     animateScaling(shapeWithProps, delta);
     // console.log('animation shape', shape)
@@ -325,6 +338,13 @@ function animate() {
 window.requestAnimationFrame(animate);
 // treee js /////////////////////////////////
 
-function moveCameraDuringMouseMoveInFullscreen(e) { 
-    const 
+function moveCameraDuringMouseMoveInFullscreen({clientX, clientY,camera}) { 
+    const normolizeX = (clientX / window.innerWidth) - 0.5;
+    const normolizeY = (clientY / window.innerHeight) - 0.5;
+    camera.rotation.y = normolizeX;
+    camera.rotation.x = normolizeY;
+}
+function returnDefaultPositionCameraAfterFullScreen(camera) { 
+    camera.rotation.y = 0;
+    camera.rotation.x = 0;
 }
