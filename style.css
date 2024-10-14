@@ -1,6 +1,16 @@
+html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    /* overflow: hidden; */
+}
+body{
+    background-color: blue;
+}
 body,
-p {
+p,
+h1 {
     margin: 0;
+    padding: 0;
 }
 
 h1 {
@@ -11,12 +21,11 @@ p {
     text-align: center;
     font-size: 14px;
 }
-
+.first-element,
 .container {
     position: relative;
-    overflow: hidden;
     height: 100vh;
-    /* margin-bottom: 100px; */
+    margin: 0;
 }
 
 .container-1 {
@@ -32,24 +41,10 @@ p {
     margin: 0;
     background-color: yellow;
 }
-
-.canvas-element {
+/* для канвас расстягивание таким образом не работает */
+.canvas{
     position: absolute;
+    display: block;
     top: 0;
     left: 0;
-    height: 10%;
-    width: 5%;
-    transition: transform 0.8s linear;
-}
-
-.canvas-element-1 {
-    background-color: red;
-}
-
-.canvas-element-2 {
-    background-color: blue;
-}
-
-.canvas-element-3 {
-    background-color: violet;
 }

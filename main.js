@@ -1,298 +1,330 @@
 import * as THREE from 'three';
-console.log(document.querySelectorAll('.container'))
-const container = [...document.querySelectorAll('.container')];
-const containersWithtargetElementAndHisChildren = container
-    .map((parent) => ({ parent, children: parent.querySelector('.canvas-element') }));
 
-function setCanvasElementCenterPosition({ parent, children }) {
+const CAMERA_POSITION_Z = 4;
+const MAX_SCALE_SHAPE = 2;
+const DEFAULT_SCALE = 0;
+const container = [...document.querySelectorAll('.canvas')];
+const typesGeometryElements = [new THREE.BoxGeometry(1, 1, 1, 10, 10, 10),new THREE.CylinderGeometry( 1, 1, 1, 32 ),new THREE.TorusGeometry];
+const arrayCoordinateClick = [];
+const arrayCoordinateDbllick = [];
+const canvasPostionToTopPageScrollCoordinate = [];
+const containerWithRenderShapesAndProps = container.map(create3D).filter(el => el !== null);
+window.addEventListener('click', (e) => arrayCoordinateClick.push({x:e.clientX, y: e.clientY}))   
+document.addEventListener('scroll', scroll);
+console.log('window inner width', window.innerWidth);
+console.log('window inner height', window.innerHeight);
+
+function create3D(canvas, id) { 
+    const numberContainer = id + 1;
+    const canvasParentContainer = document.querySelector(`.container-${numberContainer}`);
+    console.log(canvasParentContainer)
+    const geometry = typesGeometryElements[id];
+    if (geometry) {
+        const scene = new THREE.Scene();
+        console.log(canvasParentContainer.offsetWidth)
+        console.log()
+        // const camera = new THREE.PerspectiveCamera(75, canvasParentContainer.offsetWidth / canvasParentContainer.offsetHeight, 0.1, 1000);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas });
+        // renderer.setSize(canvasParentContainer.offsetWidth, canvasParentContainer.offsetHeight);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+        const shape = new THREE.Mesh(geometry, material);
+        const shapeAndOwnProps = setPropsForShapeElement({ canvas, shape, camera, renderer });
+        const { positionProps: { startPositionX, startPositionY } } = shapeAndOwnProps;
+        scene.add(shape);
+        scene.add(camera);
+        camera.position.z = CAMERA_POSITION_Z;
+        shape.position.x = startPositionX;
+        shape.position.y = startPositionY;
+        renderer.setClearColor(0xffffff, 0)
+        renderer.render(scene, camera);
+        shapeAndOwnProps.scene = scene;
+        shapeAndOwnProps.camera = camera;
+        shapeAndOwnProps.render = () => renderer.render(scene, camera);
+        shapeAndOwnProps.renderer = renderer;
+        shapeAndOwnProps.updatAfterResize = () => { 
+            updateCamera({camera, renderer})
+        }
+        // renderer.render(scene, camera);
+        return shapeAndOwnProps;
+    }
+    return null;
+}
+
+// window.addEventListener('resize', () => [...document.querySelectorAll('.canvas')].forEach(canvas => {
+//     // canvas.setAttribute('width', window.innerWidth);
+//     // canvas.setAttribute('height', window.innerHeight);
+//     canvas.style.height = `${window.innerHeight}px`;
+//     canvas.style.width = `${window.innerWidth}px`;
+// }));
+function updateCoordinateAndSetNewRenderScrolling({canvas, renderer, camera}) { 
+    // canvas.setAttribute('width', window.innerWidth);
+    // canvas.setAttribute('height', window.innerHeight);
+    canvas.style.height = `${window.innerHeight}px`;
+    canvas.style.width = `${window.innerWidth}px`;
+    updateCamera({renderer, camera})
+
+}
+const devicePixelRatio = window.devicePixelRatio;
+console.log("Device Pixel Ratio: ", devicePixelRatio);
+console.log(window.screen.width, window.screen.height);
+console.log(window.screen.availWidth,window.screen.availHeight)
+console.log('one click', arrayCoordinateClick);
+console.log('dbl click', arrayCoordinateDbllick);
+console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
+function setPropsForShapeElement({ canvas, shape, camera }) {
     const pageScroll = window.scrollY;
-    const targetElement = children;
-    const heightParentElement = parent.scrollHeight;
-    const widthParentElement = parent.scrollWidth;
-    const heightTargetElement = targetElement.scrollHeight;
-    const widthTargetElement = targetElement.scrollWidth;
-    const distanceToPositionTargetelementInCenterVertical = (heightParentElement / 2) - (heightTargetElement / 2);
-    const distanceToPositionTragetElementInCenterHorisontal = (widthParentElement / 2) - (widthTargetElement / 2);
 
+    canvas.addEventListener('dblclick', (e) => {
+        const pageScroll = window.scrollY;
+        arrayCoordinateDbllick.push({ x: e.clientX, y: e.clientY });
+        const isFullScreen = document.fullscreenElement !== null;
+        if (isFullScreen) {
+            // canvasPostionToTopPageScrollCoordinate.push({fullScreen: true,pageScroll: window.scrollY, canvasDistanceToTop: canvas.getBoundingClientRect().top + pageScroll, scrollToElement: canvas.getBoundingClientRect().top - pageScroll} );
+            // console.log('second')
+
+            document.exitFullscreen();
+            // console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
+
+        } else {
+            // console.log('first')
+            // canvasPostionToTopPageScrollCoordinate.push({fullScreen: false,pageScroll: window.scrollY, canvasDistanceToTop: canvas.getBoundingClientRect().top + pageScroll, scrollToElement: canvas.getBoundingClientRect().top - pageScroll});
+            canvas.requestFullscreen();
+            // console.log('when fullScreenClick pageScroll canvasDistanceToTop, ', canvasPostionToTopPageScrollCoordinate);
+
+        }
+        // поместить в условие когда будет преключение из полного режима в неполный
+        // const canvasDistanceToTop = canvas.getBoundingClientRect().top + pageScroll;
+        // const pageScroll = window.scrollY;
+    })
     return {
-        sizeToCenterElementInParentX: distanceToPositionTragetElementInCenterHorisontal,
-        sizeToCenterElementInParentY: distanceToPositionTargetelementInCenterVertical,
-        parent,
-        children,
-        topDistanceToParent: parent.getBoundingClientRect().top + pageScroll,
+        positionProps: {
+            startPositionX: -10,
+            startPositionY: 4,
+            endPositionX: 0,
+            endPositionY: 0,
+        },
+        isShapeInCenter: false,
+        canvas,
+        shape,
+        camera,
+        topDistanceToCanvasElement: canvas.getBoundingClientRect().top + pageScroll,// исправить на канвас а чилдрен єто сама фигура
     }
 }
-let containersWithTargetElementHisChildrenAndProps = containersWithtargetElementAndHisChildren.map(setCanvasElementCenterPosition);
-window.addEventListener('resize', () => {
-    containersWithTargetElementHisChildrenAndProps = containersWithtargetElementAndHisChildren.map(setCanvasElementCenterPosition);
-});
-containersWithTargetElementHisChildrenAndProps.forEach(setCoordinatesToMoveChidlrenInParentContainerDuringPageIsScrolling)
-function setCoordinatesToMoveChidlrenInParentContainerDuringPageIsScrolling({ sizeToCenterElementInParentX, sizeToCenterElementInParentY, parent, children: targetElement, topDistanceToParent: topContainer }) {
-    console.log('windowScrollY', window.scrollY)
-    console.log('window pageYoffset', window.pageYOffset)
-    const scrollY = window.scrollY;//window.pageYOffset
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    if (topContainer - windowHeight >= 0) {
-        // scrollY - (topContainer - windowHeight) === 0 значит скролл дошел до элемента- bottom wiew port совпал с верхней точкой целевого контейнера
-        if (scrollY - (topContainer - windowHeight) >= 0) {//здесь фиксированній размер - topContainer - windowHeight. Условие выполняетс когда боттом окна дошел о топа элемента.Тоесть мы доскролилии относительно нижнией точки окна
-            if (scrollY - (topContainer - windowHeight) - targetElement.scrollHeight >= 0) {//высчитывание скрола внтри элемента когда мы до него дошли
-                // будет выполняться если доскролен или уже проскролен()
-                const offSet = (scrollY - (topContainer - windowHeight)) / 2; //делю на 2 чтоб медленней прокручивалось
-                const x = (offSet / sizeToCenterElementInParentY) * sizeToCenterElementInParentX;//соотношение лучше всего брать отсюда
-                console.log('weoksss')
+function updatePropertyOfDistanceToCanvasElementAfterWindowResize(elementWithProps) { 
+    const pageScroll = window.scrollY;
+    elementWithProps.topDistanceToCanvasElement = elementWithProps.canvas.getBoundingClientRect().top + pageScroll; 
+}
+function updateCamera({camera, renderer}) { 
+    const width = window.innerWidth;
+    console.log('camera update')
+    const height = window.innerHeight;
+    camera.updateProjectionMatrix();
+    camera.aspect = width / height;
+    renderer.setSize(width, height)
+}
+function updateShapeSetsAndRenderSets() { 
+    // containerWithRenderShapesAndProps.forEach(updateCoordinateAndSetNewRenderScrolling);
+    //1 изменение размеров канвас при изменении окна. Делаем впервую очередь потому что нам нужно расчитать
+    // расстояние до элементов канвас(они будут менять свою высоту и ширину - но нам важна  при расчете высота
+    // для правильного определния расстояния от верхней части документа до элемента канвас, так как следующие
+    // элементы канвас учитывают высоту предыдущих). На основании изменения высоты у нас будет расчитываться
+    // расстояние до элемента, рассчитываться пересчение и проскроливание окна viewport внутри канвас элемента
+    //  а также шаг сдвига shape внутри канвас, так как шаг напрямую зависит от высоты канвас.И просроливание окна
+    // внутри канвас зависит от высоты элемента.Когда скрол окна будет больше чем высота элемента канвас после точки
+    // пересечения(WindowY - scrollToElement >=0)  - определение условия точки пересечения, canvas.offsetheight - window.scrollY >= 0
+    // - если больше нуля значит окно скролится в элементе, если условие не выполняется значит окно(его нижняя часть) -
+    // проскролилиа элемент.
+    // 2 пересчитываем после изменения канвас  расстояние от документа до канвас элементов(нам важно высчитаьть скрол до элемента)
+    // - функция updatePropertyOfDistanceToCanvasElementAfterWindowResize
+    // 3 пересчитваем положение shape внутри канвас. Если окно уменьшается - шаг сдвига shape увеличивается, так как
+    // он прямопропорционален высоте элемента канвас. И наоборот - увеличивается окно,уменьшается шаг.
+    // Поэтому при ресайзе кона мы видим как у нас при уменьшении окна - shape свдигаются в центр
+    // и при увелечнии окна - shape сдвигаются в верхнюю часть элемента канвас
+    
+    containerWithRenderShapesAndProps.forEach(({ canvas,renderer, camera }) => { 
+        // console.log('canvas', canvas)
+        // canvas.style.height = `${window.innerHeight}px`; // далает тоже самое что и renderer.setSize - но эта функция изменяет больше облать видимости. Это видно при полном екране
+        // canvas.style.width = `${window.innerWidth}px`;// далает тоже самое что и renderer.setSize - но эта функция изменяет больше облать видимости. Это видно при полном екране
+        // renderer.setSize(window.innerWidth, window.innerHeight) // далает тоже самое что и кода выше,но дополнттельно меняет ратсягивает облать видиости на весь екран
+        updateCamera({renderer, camera})
+    })
+    containerWithRenderShapesAndProps.forEach(updatePropertyOfDistanceToCanvasElementAfterWindowResize);
+    containerWithRenderShapesAndProps.forEach(setPositionShapeDuringScrolling);
+    
+    // устанавдливаем новые координаты расположения элементов канвас при изменения размера окна
+    // так как меняется расстояние до элемента от верхней части документа
+    // (меняется высота екрана при повороте екрана)
+    // containerWithRenderShapesAndProps.forEach(updatePropertyOfDistanceToCanvasElementAfterWindowResize);
+    // перередериваем наши элементы отночительно расположения скрола окна к нашим целевым контейнерам
+    // containerWithRenderShapesAndProps.forEach(setPositionShapeDuringScrolling);
+//     containerWithRenderShapesAndProps.forEach((shapeWithProps) => {
+//         updatePropertyOfDistanceToCanvasElementAfterWindowResize(shapeWithProps);
+    //         setPositionShapeDuringScrolling(shapeWithProps)
+    //добавить еще обновление матрицы render Элементов 
+//     })
+}
+ 
+window.addEventListener('resize', updateShapeSetsAndRenderSets);
+    
+function setPositionShapeDuringScrolling(shapeWithProps) {
+    
+    const { canvas, shape, topDistanceToCanvasElement, positionProps, render } = shapeWithProps;
+    console.log('SHAPE',shape)
 
-                if (offSet <= sizeToCenterElementInParentY) {// условие, то сколько ты проскролил когда дошел до элемента, должно быть меншьше
-                    // расстояния от вреха элемента до того момента чтоб дочерний расположился по центру элемента 
-                    targetElement.style.transform = `translate(${x}px,${offSet}px)`
-                    console.log('first condition')
-                } else {
-                    console.log('second condition')
-                    targetElement.style.transform = `translate(${sizeToCenterElementInParentX}px,${sizeToCenterElementInParentY}px)`;
-                }
-                console.log('i`m inside container ')
+   console.log('topdistance to canvasd', topDistanceToCanvasElement)
+    const scrollY = window.scrollY;//window.pageYOffset
+    const windowHeight = window.innerHeight;
+    const maxDistanceToScrollInsideCanvas = canvas.offsetHeight;
+
+    const {
+        startPositionX,
+        startPositionY,
+        endPositionX,
+        endPositionY,
+    } = positionProps;
+    if (topDistanceToCanvasElement - windowHeight >= 0) {
+        // scrollY - (topDistanceToCanvasElement - windowHeight) === 0 значит скролл дошел до элемента- bottom wiew port совпал с верхней точкой целевого контейнера
+        const scrollDistanceToCanvasElement = topDistanceToCanvasElement - windowHeight;
+        if (scrollY - scrollDistanceToCanvasElement >= 0) {//здесь фиксированній размер - topDistanceToCanvasElement - windowHeight. Условие выполняетс когда боттом окна дошел о топа элемента.Тоесть мы доскролилии относительно нижнией точки окна
+            console.log('event done')
+            // доскролили до єлемента или проскролили его
+            const scrollDistanceAfterWindowBottomEdgeIntersetionedWithCanvas = scrollY - scrollDistanceToCanvasElement;// расстояние когда боттом виндов пересек канвас
+            if (maxDistanceToScrollInsideCanvas - scrollDistanceAfterWindowBottomEdgeIntersetionedWithCanvas >= 0) {
+                // выполнится если мы скролим внутри элемента
+                // условие выполняется если мы скролим внутри элемента
+                const scrollDistanceInsideCanvas = scrollDistanceAfterWindowBottomEdgeIntersetionedWithCanvas;
+                const { changePositionShapeByX, changePositionShapeByY } = calculateShapePositionDuringScroling({
+                    endPositionY,
+                    startPositionY,
+                    endPositionX,
+                    startPositionX,
+                    maxDistanceToScrollInsideCanvas,
+                    scrollDistanceInsideCanvas
+                });
+                setShapePosition({shape, x: changePositionShapeByX, y: changePositionShapeByY });
+                maxDistanceToScrollInsideCanvas === scrollDistanceInsideCanvas ? shapeWithProps.isShapeInCenter = true : shapeWithProps.isShapeInCenter = false;
+            
+
+                // if (scrollY - scrollDistanceToCanvasElement - maxDistanceToScrollInsideCanvas / 2 >= 0) {//высчитывание скрола внтри элемента когда мы до него дошли
+                //     console.log('scroll in some distance inside element')
+                //     // позиционируем элемент к центру
+                //     // const stepY = Math.abs((endPositionY - startPositionY) / maxDistanceToScrollInsideCanvas);
+                //     // const stepX = Math.abs((endPositionX - startPositionX) / maxDistanceToScrollInsideCanvas);
+                //     // const changePositionShapeByX = startPositionX + stepX * scrollDistanceInsideCanvas;
+                //     // const changePositionShapeByY = startPositionY - stepY * scrollDistanceInsideCanvas;
+                //     // shape.position.x = changePositionShapeByX;
+                //     // shape.position.y = changePositionShapeByY;
+                //     setShapePosition({shape, x: changePositionShapeByX, y: changePositionShapeByY });
+                //     maxDistanceToScrollInsideCanvas === scrollDistanceInsideCanvas ? shapeWithProps.isShapeInCenter = true : shapeWithProps.isShapeInCenter = false;
+                // } else {
+                //     // делаем видимым внутри левого врехнего угла
+
+                // }
             } else {
-                // условие, когда элемент не доскролен, или мы полднялись выше него
-                targetElement.style.transform = `translate(0px,0px)`;
+                // мы проскролили канвас 
+                setShapePosition({shape, x: endPositionX, y: endPositionY });
+                shapeWithProps.isShapeInCenter = true;
+                // мы проскролили элемент и ставим его в центр
+                // можно его увелимчить
             }
+
         } else {
-            targetElement.style.transform = `translate(-100%,-100%)`;
+            setShapePosition({ shape, x: startPositionX, y: startPositionY });
         }
 
     } else {
+        // Элемент видно и к нему не нужно скролить, так как он меньше высоты окна
+        setShapePosition({ shape, x: endPositionX, y: endPositionY });
+        shapeWithProps.isShapeInCenter = true;
 
-        targetElement.style.transform = `translate(${sizeToCenterElementInParentX}px,${sizeToCenterElementInParentY}px)`;
+    }
+    render();
+}
+// window.addEventListener('mousemove', (e) => { //работает для 'click' события
+//     console.log('mouseMove');
+//     console.log('clientY', e.clientY);
+//     console.log('windowSrcoll', window.scrollY)
+//     console.log('pageY', e.pageY);//текущее положение курсора отноистельно всего документа
+//     console.log('clientY === e.pageY', e.clientY === e.pageY);
+//     console.log('e.pageY + window.scrollY',e.clientY + window.scrollY)
+// })
+function scroll(e) {
+    console.log('scroll')
+    // console.log( e.clientY);не работает
+    // console.log('pageY', e.pageY)не работает
+    // console.log('e.clientY',e.clientY)не работает
+    // console.log('e.screenY',e.screenY)не работает
+
+    containerWithRenderShapesAndProps.forEach(setPositionShapeDuringScrolling)
+}
+function setShapePosition({
+        shape,
+        x,
+        y
+    }) { 
+    shape.position.x = x;
+    shape.position.y = y;
+}
+function calculateShapePositionDuringScroling({
+        endPositionY,
+        startPositionY,
+        endPositionX,
+        startPositionX,
+        maxDistanceToScrollInsideCanvas,
+        scrollDistanceInsideCanvas
+    }) { 
+    const stepY = Math.abs((endPositionY - startPositionY) / maxDistanceToScrollInsideCanvas);
+    const stepX = Math.abs((endPositionX - startPositionX) / maxDistanceToScrollInsideCanvas);
+    const changePositionShapeByX = startPositionX + stepX * scrollDistanceInsideCanvas;
+    const changePositionShapeByY = startPositionY - stepY * scrollDistanceInsideCanvas;
+    return { changePositionShapeByX, changePositionShapeByY };
+}
+function animateScaling(shapeWithProps, step) { 
+    const stepToScale = step / 500;
+    const stepToUnScale = step / 100
+    const { isShapeInCenter, shape } = shapeWithProps;
+    const isScale = isShapeInCenter;
+    const zPosition = shape.position.z; 
+    switch (isScale) { 
+        case true:
+            MAX_SCALE_SHAPE >= zPosition + stepToScale ? shape.position.z += stepToScale: shape.position.z = MAX_SCALE_SHAPE;
+            return;
+        case false:
+            zPosition - stepToUnScale > DEFAULT_SCALE ? shape.position.z -= stepToUnScale : shape.position.z = DEFAULT_SCALE;
+            return;
     }
 }
-function scroll() {
+function setAnimationProps(shapeWithProps, delta) { 
 
-    containersWithTargetElementHisChildrenAndProps.forEach(setCoordinatesToMoveChidlrenInParentContainerDuringPageIsScrolling)
-}
-document.addEventListener('scroll', scroll)
+    const { shape, render} = shapeWithProps;
+    const step =  0.01 * delta / 10;
+    shape.rotation.y += step;
+     shape.rotation.x += step ;
 
-console.log('document scrollHeight ', document.documentElement.scrollHeight, 'document.documentElement.clientHeight', document.documentElement.clientHeight, 'body scrollHeight', document.body.scrollHeight, 'window.innerHeight', window.innerHeight)
-
-// treee js /////////////////////////////////
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-console.log(camera instanceof THREE.PerspectiveCamera);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-// renderer.setAnimationLoop( animate );
-document.body.appendChild(renderer.domElement);
-console.log(0x00ff00)
-const geometry = new THREE.BoxGeometry(1, 1, 1, 10, 10, 10);
-// const geometry = new THREE.CircleGeometry(1,10);
-// const geometry = new THREE.CylinderGeometry( 1, 1, 1, 64 );
-// const geometry = new THREE.TorusGeometry( 1, 1, 16 , 100, 1 );
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-scene.add(camera);
-
-camera.position.z = 6;
-const cursorCoordinate = {
-    x: 0,
-    y: 0
-};
-renderer.render(scene, camera);
-// setInterval(animate,16)
-let nowTime = Date.now();
-console.log(nowTime)
-// window.requestAnimationFrame(animate);
-let id = 0;
-let timeBetweenRequestAnimationFrame = null;
-const clock = new THREE.Clock();
-let now = clock.getElapsedTime();//Фиксирует время во время инициализации и возвращает верменной прмежуток между
-// начальной точкой отсчета - тоесть инциализацией и тукещем вызововом. что то на подобие const startTime = Date.now()
-//  полсе чего возвращет разницу между Date.now() - startTime - при каждом вызове
-function animate(time) {
-    console.log('elipsedTime', clock.getElapsedTime() - now);
-    now = clock.getElapsedTime();
-    id++;
-    !timeBetweenRequestAnimationFrame ? timeBetweenRequestAnimationFrame = time : void 0;
-    console.log(time - timeBetweenRequestAnimationFrame);
-    timeBetweenRequestAnimationFrame = time;
-    const currentTime = Date.now();
-    const delta = currentTime - nowTime;
-    nowTime = currentTime;
-    console.log('delta', delta);
-    console.log('time give by requestAnimationFrame', time);
-    console.log('getElipsedTime', clock.getElapsedTime())
-    cube.rotation.x += 0.01;
-    console.log(cube.scale.x, cube.scale.y)
-
-    // cube.rotation.y += 0.01;
+    animateScaling(shapeWithProps, delta);
+    // console.log('animation shape', shape)
+    // console.log('work')
+        // cube.rotation.y += 0.01;
     // cube.rotation.z += 0.01;
     // cube.position.x = Math.sin(clock.getElapsedTime())
     // cube.position.y = Math.cos(clock.getElapsedTime())
-    renderer.render(scene, camera);
-    window.requestAnimationFrame(animate)
-
-
+    render();
 }
 
-// функция moving - может брать координаты из глобального объекта, а также может получать координаты при срабатвании
-// события движения внутри элемента
-// обработчик который задает координаты - может их сохранять в глобальном объекте, либо передавать непосредсвенно в 
-// функцию moving. Работать єто будет одинаково
-function moving(x = 0, y = 0) {
-    cube.rotation.y = x;
-    cube.rotation.x = y;
-    // cube.rotation.y = cursorCoordinate.x;
-    // cube.rotation.x = cursorCoordinate.y;
-    console.log('tik')
-    // camera.position.x = cursorCoordinate.x;
-    // camera.position.y = cursorCoordinate.y;
-    renderer.render(scene, camera);
+let nowTime = Date.now();
+function animate() {
+    const currentTime = Date.now();
+    const delta = currentTime - nowTime;
+    nowTime = currentTime;
+    containerWithRenderShapesAndProps.forEach((shapeWithProps) => setAnimationProps(shapeWithProps, delta));
+    window.requestAnimationFrame(animate);
 }
-// window.addEventListener('mousemove', (e) => {
-//     const x = (e.clientX / window.innerWidth) * 2 - 1;
+window.requestAnimationFrame(animate);
+// treee js /////////////////////////////////
 
-//     const y = (e.clientY / window.innerHeight) * 2 - 1;
-
-//     console.log('x - ', x, 'y - ', y)
-//     cursorCoordinate.x = x;
-//     cursorCoordinate.y = y;
-//     console.log(cursorCoordinate)
-//     moving(x ,y)
-//     // moving()
-// })
-
-
-
-
-// window.addEventListener('wheel', () => {
-//     console.log('wheel')
-//     animate()
-// })
-// console.log(
-//     document.body.scrollHeight, document.documentElement.scrollHeight,
-//     document.body.offsetHeight, document.documentElement.offsetHeight,
-//     document.body.clientHeight,
-//   )
-
-// Нужно применять условие внизу потому что в разных браузерах может вычисляться по разному
-// var scrollHeight = Math.max(
-//     document.body.scrollHeight, document.documentElement.scrollHeight,
-//     document.body.offsetHeight, document.documentElement.offsetHeight,
-//     document.body.clientHeight, document.documentElement.clientHeight
-//   );
-// https://10-years.kota.co.uk/
-// https://atomsworld.co.jp/
-// https://videorbit.com/
-// https://peptone.io/
-
-
-
-
-
-// нормализация и анимация элемента при клике на элементе внутри элемента канвас
-let activeElementProps = null;
-const raycaster = new THREE.Raycaster();
-renderer.render(scene, camera)
-window.addEventListener('click', (e) => {
-    const x = (e.clientX / window.innerWidth)  - 0.5;
-    const y = -(e.clientY / window.innerHeight)  + 0.5;
-    // console.log('x - normolise', x);
-    // console.log('y - normolise', y);
-    const pointer = new THREE.Vector2();
-    pointer.x = x;
-    pointer.y = y;
-    raycaster.setFromCamera(pointer, camera);
-    const intersection = raycaster.intersectObject(cube);
-    console.log(intersection);
-    console.log(cube)
-    if (intersection.length) {
-        const [{ object: activeElement }] = intersection;
-        console.log('activeElement',activeElement);
-        if (activeElementProps !== null) {
-            const prevactiveElement = activeElementProps.activeElement;
-            if (activeElement === prevactiveElement) {
-                console.log(true)
-                resetPropsAndSetStartPositionPrevActiveElement();
-                renderer.render(scene, camera)
-            } else {
-                resetPropsAndSetStartPositionPrevActiveElement();
-                setActiveElement(activeElement);
-                startAnimationActiveElement(activeElement);
-            }
-        } else {
-            setActiveElement(activeElement);
-            startAnimationActiveElement();
-        }
-        
-
-    } else { 
-        if (activeElementProps !== null) { 
-            resetPropsAndSetStartPositionPrevActiveElement();
-            renderer.render(scene, camera)
-        }
-    }
-})
-
-
-function resetPropsAndSetStartPositionPrevActiveElement(activeElement = activeElementProps.activeElement, position = activeElementProps.position) {
-    // const { activeElement, position } = prevActiveElement;
-    const { x, y, z } = position;
-    console.log('x - ',x ,'y- ', y, z)
-    activeElement.material.color.set(0x00ff00);
-    activeElement.position.set(x, y, z);
-    activeElement.rotation.set(0, 0 , 0)
-    activeElementProps = null;
-}
-//утсанавливает активный элемент
-function setActiveElement(element) {
-    activeElementProps = { activeElement: element, position: {...element.position} };
-}
-// устанавливает анимацию
-function startAnimationActiveElement() {
-    const rotateElement = createRotationWrapper();
-    rotateElement();
-}
-
-function createRotationWrapper() { 
-    // создаем функцию обертку для того чтобы инициализировать начальную точку отсчета времени начала анимации
-
-    let startTime = Date.now();
-    return function rotateElement() {
-        const isAvtiveElement = !!activeElementProps;
-        if (isAvtiveElement) {
-            const z = 4;
-            const { activeElement } = activeElementProps;
-            const current = Date.now();
-            const delta = current - startTime;
-            startTime = current;
-            activeElement.rotation.x += delta / 1000;
-            activeElement.rotation.y += delta / 1000;
-            if ( activeElement.position.z <= z) {
-                activeElement.position.z += delta / 1000;
-    
-            }
-            renderer.render(scene, camera);
-            window.requestAnimationFrame(rotateElement);
-         }
-        
-    }
-}
-function goBackPrevActiveElementAndStartAnimateNewElementWrapper(prevElement, startPositionPrevElement,activeElement = null) { 
-    let startTime = Date.now();
-    const { x, y, z } = startPositionPrevElement;
-    function goBackPrevActiveElementAndStartAnimateNewElement() {
-        const currentTime = Date.now();
-        const delta = currentTime - startTime;
-        startTime = currentTime;
-        if (prevElement.position.z > 0) {
-            prevElement.position.z -= delta / 1000;
-            activeElement.rotation.x += delta / 1000;
-            activeElement.rotation.y += delta / 1000;
-            renderer.render(scene, camera)
-            window.requestAnimationFrame(goBackPrevActiveElementAndStartAnimateNewElement)
-        }
-        else { 
-            resetPropsAndSetStartPositionPrevActiveElement(prevElement, startPositionPrevElement);
-            setActiveElement(activeElement);
-            startAnimationActiveElement();
-        }
-    }
+function moveCameraDuringMouseMoveInFullscreen(e) { 
+    const 
 }
