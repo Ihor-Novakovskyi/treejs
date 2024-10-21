@@ -1,9 +1,9 @@
 html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
-    /* overflow: hidden; */
+   
 }
 body{
+    overflow-x: hidden;
     background-color: blue;
 }
 body,
@@ -21,13 +21,24 @@ p {
     text-align: center;
     font-size: 14px;
 }
+.canvas{
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0; 
+}
 .first-element,
+.load-page, 
 .container {
     position: relative;
     height: 100vh;
     margin: 0;
-}
 
+}
+.load-page{
+position: fixed;
+top: 0;
+}
 .container-1 {
     background-color: aqua;
 
@@ -41,10 +52,34 @@ p {
     margin: 0;
     background-color: yellow;
 }
-/* для канвас расстягивание таким образом не работает */
-.canvas{
-    position: absolute;
+/* для канвас расстягивание таким образом - left: 0 right: 0 -  не работает */
+ 
+/* .load-animation{
     display: block;
-    top: 0;
-    left: 0;
 }
+.no-visible{
+    display: none;
+}
+.animation-text{
+display: block;
+animation: 5s linear  infinite alternate animation-opacity;
+} */
+/* @keyframes animation-opacity{
+    from {
+        color: black;
+    }
+    to {
+        color: red;
+    }
+    } */
+/* @keyframes animation-opacity{
+0% {
+    opacity: 0;
+}
+50% {
+    opacity: 1;
+}
+100%{
+    opacity: 0;
+}
+} */
