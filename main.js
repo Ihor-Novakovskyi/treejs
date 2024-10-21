@@ -13,16 +13,11 @@ window.addEventListener('resize', updateShapeSetsAndRenderSets);
 function create3DShapeWithOwnPropsShapeWithOwnProps(canvas, id) {
     const numberContainer = id;
     const canvasParentContainer = document.querySelector(`.container-${numberContainer}`);
-    console.log(canvasParentContainer)
     const geometry = typesGeometryElements[id];
     if (geometry) {
         const scene = new THREE.Scene();
-        console.log(canvasParentContainer.offsetWidth)
-        console.log()
-        // const camera = new THREE.PerspectiveCamera(75, canvasParentContainer.offsetWidth / canvasParentContainer.offsetHeight, 0.1, 1000);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas });
-        // renderer.setSize(canvasParentContainer.offsetWidth, canvasParentContainer.offsetHeight);
         renderer.setSize(window.innerWidth, window.innerHeight);
         const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
         const shape = new THREE.Mesh(geometry, material);
@@ -70,14 +65,12 @@ function setPropsForShapeElement({ canvas, shape, camera }) {
         const { isShapeInCenter } = shapeAndOwnProps;
         const canvasInFullScreen = document.fullscreenElement === canvas;
         isShapeInCenter && canvasInFullScreen ? moveCameraDuringMouseMoveInFullscreen({ camera, clientX, clientY, shape }) : void 0;
-        console.log('isShapeInCenter && canvasInFullScreen', isShapeInCenter && canvasInFullScreen);
     })
     canvas.addEventListener('dblclick', (e) => {
         const { isShapeInCenter } = shapeAndOwnProps;
         const isFullScreen = document.fullscreenElement !== null;
         if (isFullScreen) {
-            document.exitFullscreen();
-
+            closeFullScreenMode();
         } else {
             isShapeInCenter ? canvas.requestFullscreen() : void 0;
         }
@@ -85,6 +78,7 @@ function setPropsForShapeElement({ canvas, shape, camera }) {
     return shapeAndOwnProps;
 
 }
+
 function updatePropertyOfDistanceToCanvasElementAfterWindowResize(elementWithProps) {
     const pageScroll = window.scrollY;
     elementWithProps.topDistanceToCanvasElement = elementWithProps.canvas.getBoundingClientRect().top + pageScroll;
@@ -123,16 +117,14 @@ function setPositionShapeDuringScrolling(shapeAndOwnProps) {
         endPositionX,
         endPositionY,
     } = positionProps;
-    if (topDistanceToCanvasElement - windowHeight >= 0) {
+    if (topDistanceToCanvasElement >= windowHeight ) {
         // scrollY - (topDistanceToCanvasElement - windowHeight) === 0 значит скролл дошел до элемента- bottom wiew port совпал с верхней точкой целевого контейнера
         const scrollDistanceToCanvasElement = topDistanceToCanvasElement - windowHeight;
         if (scrollY - scrollDistanceToCanvasElement >= 0) {//здесь фиксированній размер - topDistanceToCanvasElement - windowHeight. Условие выполняетс когда боттом окна дошел о топа элемента.Тоесть мы доскролилии относительно нижнией точки окна
-            console.log('event done')
             // доскролили до єлемента или проскролили его
             const scrollDistanceAfterWindowBottomEdgeIntersetionedWithCanvas = scrollY - scrollDistanceToCanvasElement;// расстояние когда боттом виндов пересек канвас
-// Рассматриваем точку пересечения как начало точки отсчета - тоесть 0, после того как окно пересеклось и начало идити от границы пересечения  
+            // Рассматриваем точку пересечения как начало точки отсчета - тоесть 0, после того как окно пересеклось и начало идти от границы пересечения  
             if (maxDistanceToScrollInsideCanvas - scrollDistanceAfterWindowBottomEdgeIntersetionedWithCanvas >= 0) {
-                // выполнится если мы скролим внутри элемента
                 // условие выполняется если мы скролим внутри элемента
                 const scrollDistanceInsideCanvas = scrollDistanceAfterWindowBottomEdgeIntersetionedWithCanvas;
                 const { changePositionShapeByX, changePositionShapeByY } = calculateShapePositionDuringScroling({
@@ -159,7 +151,7 @@ function setPositionShapeDuringScrolling(shapeAndOwnProps) {
         }
 
     } else {
-        // Элемент видно и к нему не нужно скролить, так как он меньше высоты окна
+        // Элемент видно и к нему не нужно скролить, так как он виден в окне
         setShapePosition({ shape, x: endPositionX, y: endPositionY });
         shapeAndOwnProps.isShapeInCenter = true;
 
@@ -189,7 +181,6 @@ function calculateShapePositionDuringScroling({
     const stepY = Math.abs((endPositionY - startPositionY) / maxDistanceToScrollInsideCanvas);
     const stepX = Math.abs((endPositionX - startPositionX) / maxDistanceToScrollInsideCanvas);
     const changePositionShapeByX = startPositionX + stepX * scrollDistanceInsideCanvas;
-    console.log('changePositionShapeByX',changePositionShapeByX)
     const changePositionShapeByY = startPositionY - stepY * scrollDistanceInsideCanvas;
     return { changePositionShapeByX, changePositionShapeByY };
 }
@@ -235,21 +226,15 @@ function moveCameraDuringMouseMoveInFullscreen({ clientX, clientY, camera, shape
     const normolizeY = (clientY / window.innerHeight) - 0.5;
     camera.rotation.y = normolizeX;
     camera.rotation.x = normolizeY;
-
-    // rotation camera around the shape when mouse move on x axis
-    // before test this code we must change scaling, because element must be in center axis
-    // const startAngle = 90 / 57.5
-    // const normolizeX = (clientX / window.innerWidth) * 2 - 1;
-    // const normolizeY = (clientY / window.innerHeight) * 2 - 1;
-    // camera.position.z = CAMERA_POSITION_Z * Math.sin((startAngle + normolizeX * 2 * Math.PI));
-    // camera.position.x = CAMERA_POSITION_Z * Math.cos((startAngle + normolizeX * 2 * Math.PI));
-    // camera.lookAt(shape.position);
 }
 function returnDefaultPositionCameraAfterFullScreen(camera) {
     camera.rotation.y = 0;
     camera.rotation.x = 0;
 }
-
+function closeFullScreenMode() { 
+    const isElementInFullScreen = document.fullscreenElement !== null;
+    isElementInFullScreen ? document.exitFullscreen() : void 0;
+}
 function createElementForLoadPage() {
     const typesGeometryElements = [new THREE.BoxGeometry(1, 1, 1, 10, 10, 10), new THREE.CylinderGeometry(1, 1, 1, 32), new THREE.TorusGeometry];
     const position = [{ startAngle: Math.round(120 / 57.3) }, { startAngle: Math.round(240 / 57.3) }, { startAngle: Math.round(360 / 57.3)}];
@@ -258,20 +243,6 @@ function createElementForLoadPage() {
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const canvas = document.querySelector('.load-animation');
     const renderer = new THREE.WebGLRenderer({ canvas });
-    
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    typesGeometryElements.forEach(geometry => { 
-        const shape = new THREE.Mesh(geometry, material);
-        group.add(shape);
-    })
-    scene.add(group);
-    scene.add(camera);
-    camera.position.z = 8;
-    renderer.render(scene, camera);
-    console.log('group', group);
-
-    let startTime = null;
     let isMovingToCenter = true;
     const maxRadiusDistance = 4;
     const minRadiusDistance = 1;
@@ -281,6 +252,16 @@ function createElementForLoadPage() {
     let isLoadPageOpen = true;
     let userCanCloseLoadPageAfterDelay = false;
     let date = Date.now();
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    typesGeometryElements.forEach(geometry => { 
+        const shape = new THREE.Mesh(geometry, material);
+        group.add(shape);
+    })
+    scene.add(group);
+    scene.add(camera);
+    camera.position.z = 8;
+    renderer.render(scene, camera);
     document.body.style.overflow = 'hidden';
     canvas.addEventListener('mousemove', leaveCenterWhenMouseMove);
     setTimeout(delayBeforeUserCanCloseLoadingPage, 4000);
@@ -288,6 +269,12 @@ function createElementForLoadPage() {
     window.addEventListener('resize', updateCameraLoadPageWhenResize);
     animateRotation();
 
+    function updatePositionShapes({geometry, id , tick}) { 
+        geometry.position.x = movingDistance * Math.cos(((tick / 1000) + position[id].startAngle));
+        geometry.position.y = movingDistance * Math.sin(((tick / 1000) + position[id].startAngle));
+        geometry.rotation.x += 0.01;
+        geometry.rotation.z += 0.01;
+    }
     
     function animateRotation(tick) {   
         const currentDate = Date.now();
@@ -300,31 +287,22 @@ function createElementForLoadPage() {
                 isMovingToCenter = true;
             }
             if (isMovingToCenter) {
-                //300
+                //300 количесвто циклов по прибилижению элементров к ценру осей
                 movingDistance -= stepToCenterMove;
-                // camera.position.z -= stepToCenterMove;
                 camera.position.z -= 0.02;
             } else {
                 movingDistance += stepToLeaveCenterMove;
-                //60
-                // camera.position.z += stepToLeaveCenterMove;
+                //60 количество циклов выполнения условия по достижению удаления элемнта
                 camera.position.z += 0.1
             }
             const { children } = group;
-            const deltaTime = !!startTime ? (tick - startTime) : tick;
-            startTime = tick;
-            children.forEach((geometry, id) => {
-                geometry.position.x = movingDistance * Math.cos(((tick / 1000) + position[id].startAngle));
-                geometry.position.y = movingDistance * Math.sin(((tick / 1000) + position[id].startAngle));
-                geometry.rotation.x += 0.01;
-                geometry.rotation.z += 0.01;
-            });
+            children.forEach((geometry, id) => updatePositionShapes({geometry, id, tick}));
             renderer.render(scene, camera);
             window.requestAnimationFrame(animateRotation);
         } else { 
-            document.exitFullscreen();
+            closeFullScreenMode();
             deleteContainerWithCanvasAnimation();
-            deleteListener();
+            window.removeEventListener('resize', updateCameraLoadPageWhenResize);
         }
     }
     function deleteContainerWithCanvasAnimation() { 
@@ -340,7 +318,7 @@ function createElementForLoadPage() {
     function closeLoadPageAndExitFullScreen() {
         const isLoadPageInFullScreen = !!document.fullscreenElement; 
         isLoadPageOpen = false;     
-        isLoadPageInFullScreen ? document.exitFullscreen() : void 0;
+        isLoadPageInFullScreen ? closeFullScreenMode() : void 0;
         document.body.style.overflow = '';
     }
     function openLoadPageInFullScreen() { 
@@ -353,8 +331,6 @@ function createElementForLoadPage() {
     function updateCameraLoadPageWhenResize() { 
         updateCamera({ camera, renderer });
     }
-    function deleteListener() { 
-        window.removeEventListener('resize', updateCameraLoadPageWhenResize);
-    }
+  
 }
 createElementForLoadPage();

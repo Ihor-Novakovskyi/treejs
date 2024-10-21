@@ -52,34 +52,3 @@ top: 0;
     margin: 0;
     background-color: yellow;
 }
-/* для канвас расстягивание таким образом - left: 0 right: 0 -  не работает */
- 
-/* .load-animation{
-    display: block;
-}
-.no-visible{
-    display: none;
-}
-.animation-text{
-display: block;
-animation: 5s linear  infinite alternate animation-opacity;
-} */
-/* @keyframes animation-opacity{
-    from {
-        color: black;
-    }
-    to {
-        color: red;
-    }
-    } */
-/* @keyframes animation-opacity{
-0% {
-    opacity: 0;
-}
-50% {
-    opacity: 1;
-}
-100%{
-    opacity: 0;
-}
-} */
