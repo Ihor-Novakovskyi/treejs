@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-
-const CAMERA_POSITION_Z = 5;
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent); 
+const CAMERA_POSITION_Z = isMobile ? 7 : 5;
 const MAX_SCALE_SHAPE = 2.5; //position shape by z axxis when element scale
 const DEFAULT_SCALE = 0;
 const container = [...document.querySelectorAll('.canvas')];
@@ -8,7 +8,7 @@ const typesGeometryElements = [new THREE.TetrahedronGeometry(1, 0),new THREE.Box
 const containerWithRenderShapesAndProps = container.map(create3DShapeWithOwnPropsShapeWithOwnProps).filter(el => el !== null);
 containerWithRenderShapesAndProps.forEach(setPositionShapeDuringScrolling)
 document.addEventListener('scroll', scroll);
-window.addEventListener('resize', updateShapeSetsAndRenderSets);
+window.addEventListener('resize', updateShapeSetsAndRenderSetsAfterResize);
 
 function create3DShapeWithOwnPropsShapeWithOwnProps(canvas, id) {
     const numberContainer = id;
@@ -45,6 +45,7 @@ function create3DShapeWithOwnPropsShapeWithOwnProps(canvas, id) {
 }
 
 function setPropsForShapeElement({ canvas, shape, camera }) {
+    let isDblTouchForMobileDevice = false;
     const pageScroll = window.scrollY;
     const shapeAndOwnProps = {
         positionProps: {
@@ -60,13 +61,23 @@ function setPropsForShapeElement({ canvas, shape, camera }) {
         topDistanceToCanvasElement: canvas.getBoundingClientRect().top + pageScroll,// исправить на канвас а чилдрен єто сама фигура
     }
 
-    canvas.addEventListener('mousemove', (e) => {
-        const { clientX, clientY } = e;
-        const { isShapeInCenter } = shapeAndOwnProps;
-        const canvasInFullScreen = document.fullscreenElement === canvas;
-        isShapeInCenter && canvasInFullScreen ? moveCameraDuringMouseMoveInFullscreen({ camera, clientX, clientY, shape }) : void 0;
-    })
-    canvas.addEventListener('dblclick', (e) => {
+    isMobile ?
+        canvas.addEventListener('touchstart', dblClickCheckerAndFullScreenModeController)
+        :
+        (canvas.addEventListener('mousemove', moveElementInFullScreenMode),
+        canvas.addEventListener('dblclick', controllFullScreenMode));
+    
+    function dblClickCheckerAndFullScreenModeController() { 
+        if (isDblTouchForMobileDevice) {
+            isDblTouchForMobileDevice = false;
+            controllFullScreenMode();
+        } else { 
+            isDblTouchForMobileDevice = true;
+            setTimeout(() => isDblTouchForMobileDevice = false, 200);
+        }
+    }
+
+    function controllFullScreenMode(e) {
         const { isShapeInCenter } = shapeAndOwnProps;
         const isFullScreen = document.fullscreenElement !== null;
         if (isFullScreen) {
@@ -74,7 +85,13 @@ function setPropsForShapeElement({ canvas, shape, camera }) {
         } else {
             isShapeInCenter ? canvas.requestFullscreen() : void 0;
         }
-    })
+    }
+    function moveElementInFullScreenMode(e) { 
+        const { clientX, clientY } = e;
+        const { isShapeInCenter } = shapeAndOwnProps;
+        const canvasInFullScreen = document.fullscreenElement === canvas;
+        isShapeInCenter && canvasInFullScreen ? moveCameraDuringMouseMoveInFullscreen({ camera, clientX, clientY, shape }) : void 0;
+    }
     return shapeAndOwnProps;
 
 }
@@ -94,7 +111,7 @@ function changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, ca
     const isElementInFullScreen = document.fullscreenElement === canvas ? true : false;
     isElementInFullScreen ? renderer.setClearColor(0x000000) : renderer.setClearColor(0xffffff, 0);
 }
-function updateShapeSetsAndRenderSets() {
+function updateShapeSetsAndRenderSetsAfterResize() {
     containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
         const { setDefaultPositionCameraAfterMouseMove, updateCameraRatioAfterResize, renderer, canvas } = shapeAndOwnProps;
         changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, canvas });
@@ -260,7 +277,7 @@ function createElementForLoadPage() {
     })
     scene.add(group);
     scene.add(camera);
-    camera.position.z = 8;
+    camera.position.z = isMobile ? 13 : 8;
     renderer.render(scene, camera);
     document.body.style.overflow = 'hidden';
     canvas.addEventListener('mousemove', leaveCenterWhenMouseMove);
