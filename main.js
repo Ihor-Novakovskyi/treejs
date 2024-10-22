@@ -86,7 +86,7 @@ function setPropsForShapeElement({ canvas, shape, camera }) {
             isShapeInCenter ? canvas.requestFullscreen() : void 0;
         }
     }
-    function moveElementInFullScreenMode(e) { 
+    function  moveElementInFullScreenMode(e) { 
         const { clientX, clientY } = e;
         const { isShapeInCenter } = shapeAndOwnProps;
         const canvasInFullScreen = document.fullscreenElement === canvas;
@@ -106,20 +106,35 @@ function updateCamera({ camera, renderer }) {
     camera.updateProjectionMatrix();
     camera.aspect = width / height;
     renderer.setSize(width, height);
+    document.querySelectorAll('.container').forEach(el => el.style.width = `${width}px`);
 }
 function changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, canvas }) {
     const isElementInFullScreen = document.fullscreenElement === canvas ? true : false;
     isElementInFullScreen ? renderer.setClearColor(0x000000) : renderer.setClearColor(0xffffff, 0);
 }
+
 function updateShapeSetsAndRenderSetsAfterResize() {
-    containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
-        const { setDefaultPositionCameraAfterMouseMove, updateCameraRatioAfterResize, renderer, canvas } = shapeAndOwnProps;
-        changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, canvas });
-        setDefaultPositionCameraAfterMouseMove();
-        updateCameraRatioAfterResize();
+// функция запускается когда проиходит изменение размера окна. При переходе элемента в полноекранный режим
+// будет изменяться размеры элементов,так как они зависят от размера окна, соотвественно будет изменться расстояние
+// до элементов оноистельно верха документа.Поэтому элементы будут сдвигаться относительно текущего положения окна
+// Так как размещение shape зависит от расположения окна относительно канвас, а наш канвас сдвинется при изменени его
+//размеров, нам нужно отменить пересчет в полноекранном режиме, так как нам не важен скрол window оносительно канвас
+//if (notFullSreen). Если же не использовать условие то во время прересчета функцией updatePropertyOfDistanceToCanvasElementAfterWindowResize 
+//и setPositionShapeDuringScrolling будет определяться что элемент не находится в правильном положении 
+//относительно окна window  и в значение  будет присавиваться - isShapeInCenter = false
+containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
+    const notFullSreen = document.fullscreenElement === null;
+    const { setDefaultPositionCameraAfterMouseMove, updateCameraRatioAfterResize, renderer, canvas, shape, isShapeInCenter } = shapeAndOwnProps;
+    changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, canvas, shape, isShapeInCenter });
+    setDefaultPositionCameraAfterMouseMove();
+    updateCameraRatioAfterResize();
+    if (notFullSreen) { 
+        console.log('resize');
+        console.log('width', window.innerWidth, 'height', window.innerHeight);
         updatePropertyOfDistanceToCanvasElementAfterWindowResize(shapeAndOwnProps);
         setPositionShapeDuringScrolling(shapeAndOwnProps);
-    })
+    }
+})
 }
 
 
