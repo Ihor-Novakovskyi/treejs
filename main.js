@@ -103,14 +103,19 @@ function updatePropertyOfDistanceToCanvasElementAfterWindowResize(elementWithPro
 function updateCamera({ camera, renderer }) {
     const width = window.innerWidth;
     const height = window.innerHeight;
+
     camera.updateProjectionMatrix();
     camera.aspect = width / height;
     renderer.setSize(width, height);
     document.querySelectorAll('.container').forEach(el => el.style.width = `${width}px`);
 }
 function changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, canvas }) {
+
     const isElementInFullScreen = document.fullscreenElement === canvas ? true : false;
     isElementInFullScreen ? renderer.setClearColor(0x000000) : renderer.setClearColor(0xffffff, 0);
+    if (isElementInFullScreen) { 
+        console.log(true)
+    }
 }
 
 function updateShapeSetsAndRenderSetsAfterResize() {
@@ -354,8 +359,8 @@ function createElementForLoadPage() {
         document.body.style.overflow = '';
     }
     function openLoadPageInFullScreen() { 
-        const isLoadPageInFullScreen = !document.fullscreenElement; 
-        isLoadPageOpen && isLoadPageInFullScreen ? canvas.requestFullscreen() : void 0; 
+        const isLoadNotOpenInFullScreen = !document.fullscreenElement; 
+        isLoadPageOpen && isLoadNotOpenInFullScreen ? canvas.requestFullscreen() : void 0; 
     }
     function delayBeforeUserCanCloseLoadingPage() { 
         userCanCloseLoadPageAfterDelay = true;
@@ -366,3 +371,7 @@ function createElementForLoadPage() {
   
 }
 createElementForLoadPage();
+window.addEventListener('click', () => { 
+    console.log('window.innerHeight - ', window.innerHeight);
+
+})
