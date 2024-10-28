@@ -14,11 +14,13 @@ function create3DShapeWithOwnPropsShapeWithOwnProps(canvas, id) {
     const numberContainer = id;
     const canvasParentContainer = document.querySelector(`.container-${numberContainer}`);
     const geometry = typesGeometryElements[id];
+    const width = document.documentElement.clientWidth;
+    const height = document.documentElement.clientHeight;
     if (geometry) {
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas });
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(width, height);
         const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
         const shape = new THREE.Mesh(geometry, material);
         const shapeAndOwnProps = setPropsForShapeElement({ canvas, shape, camera, renderer });
@@ -101,8 +103,8 @@ function updatePropertyOfDistanceToCanvasElementAfterWindowResize(elementWithPro
     elementWithProps.topDistanceToCanvasElement = elementWithProps.canvas.getBoundingClientRect().top + pageScroll;
 }
 function updateCamera({ camera, renderer }) {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = document.documentElement.clientWidth;
+    const height = document.documentElement.clientHeight;
 
     camera.updateProjectionMatrix();
     camera.aspect = width / height;
@@ -113,9 +115,6 @@ function changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, ca
 
     const isElementInFullScreen = document.fullscreenElement === canvas ? true : false;
     isElementInFullScreen ? renderer.setClearColor(0x000000) : renderer.setClearColor(0xffffff, 0);
-    if (isElementInFullScreen) { 
-        console.log(true)
-    }
 }
 
 function updateShapeSetsAndRenderSetsAfterResize() {
@@ -134,10 +133,6 @@ containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
     setDefaultPositionCameraAfterMouseMove();
     updateCameraRatioAfterResize();
     if (notFullSreen) { 
-        console.log('resize');
-        console.log('width', window.innerWidth, 'height', window.innerHeight);
-        console.log('width document', document.documentElement.clientWidth);
-        console.log('height document', document.documentElement.clientHeight);
         updatePropertyOfDistanceToCanvasElementAfterWindowResize(shapeAndOwnProps);
         setPositionShapeDuringScrolling(shapeAndOwnProps);
     }
@@ -148,7 +143,7 @@ containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
 function setPositionShapeDuringScrolling(shapeAndOwnProps) {
     const { canvas, shape, topDistanceToCanvasElement, positionProps, render } = shapeAndOwnProps;
     const scrollY = window.scrollY;//window.pageYOffset
-    const windowHeight = window.innerHeight;
+    const windowHeight = document.documentElement.clientHeight;
     const maxDistanceToScrollInsideCanvas = canvas.offsetHeight;
     const {
         startPositionX,
@@ -261,8 +256,8 @@ window.requestAnimationFrame(animate);
 
 function moveCameraDuringMouseMoveInFullscreen({ clientX, clientY, camera, shape }) {
     
-    const normolizeX = (clientX / window.innerWidth) - 0.5;
-    const normolizeY = (clientY / window.innerHeight) - 0.5;
+    const normolizeX = (clientX / document.documentElement.clientWidth) - 0.5;
+    const normolizeY = (clientY / document.documentElement.clientHeight) - 0.5;
     camera.rotation.y = normolizeX;
     camera.rotation.x = normolizeY;
 }
@@ -279,7 +274,7 @@ function createElementForLoadPage() {
     const position = [{ startAngle: Math.round(120 / 57.3) }, { startAngle: Math.round(240 / 57.3) }, { startAngle: Math.round(360 / 57.3)}];
     const group = new THREE.Group();    
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, document.documentElement.clientWidth / document.documentElement.clientHeight, 0.1, 1000);
     const canvas = document.querySelector('.load-animation');
     const renderer = new THREE.WebGLRenderer({ canvas });
     let isMovingToCenter = true;
@@ -292,7 +287,7 @@ function createElementForLoadPage() {
     let userCanCloseLoadPageAfterDelay = false;
     let date = Date.now();
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(document.documentElement.clientWidth, document.documentElement.clientHeight);
     typesGeometryElements.forEach(geometry => { 
         const shape = new THREE.Mesh(geometry, material);
         group.add(shape);
@@ -373,7 +368,3 @@ function createElementForLoadPage() {
   
 }
 createElementForLoadPage();
-window.addEventListener('click', () => { 
-    console.log('window.innerHeight - ', window.innerHeight);
-
-})
