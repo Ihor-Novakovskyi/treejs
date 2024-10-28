@@ -8,7 +8,10 @@ const typesGeometryElements = [new THREE.TetrahedronGeometry(1, 0),new THREE.Box
 const containerWithRenderShapesAndProps = container.map(create3DShapeWithOwnPropsShapeWithOwnProps).filter(el => el !== null);
 containerWithRenderShapesAndProps.forEach(setPositionShapeDuringScrolling)
 document.addEventListener('scroll', scroll);
-window.addEventListener('resize', updateShapeSetsAndRenderSetsAfterResize);
+isMobile ?
+screen.orientation.addEventListener('change', updateShapeSetsAndRenderSetsAfterResize)
+    :
+    window.addEventListener('resize', updateShapeSetsAndRenderSetsAfterResize);
 
 function create3DShapeWithOwnPropsShapeWithOwnProps(canvas, id) {
     const numberContainer = id;
@@ -123,13 +126,15 @@ function updateShapeSetsAndRenderSetsAfterResize() {
 // до элементов оноистельно верха документа.Поэтому элементы будут сдвигаться относительно текущего положения окна
 // Так как размещение shape зависит от расположения окна относительно канвас, а наш канвас сдвинется при изменени его
 //размеров, нам нужно отменить пересчет в полноекранном режиме, так как нам не важен скрол window оносительно канвас
-//if (notFullSreen). Если же не использовать условие то во время прересчета функцией updatePropertyOfDistanceToCanvasElementAfterWindowResize 
-//и setPositionShapeDuringScrolling будет определяться что элемент не находится в правильном положении 
-//относительно окна window  и в значение  будет присавиваться - isShapeInCenter = false
-containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
+//if (notFullSreen). Если же не использовать условие то во время прересчета функцией updatePropertyOfDistanceToCanvasElementAfterWindowResize
+//и setPositionShapeDuringScrolling будет определяться что элемент не находится в правильном положении
+    //относительно окна window  и в значение  будет присавиваться - isShapeInCenter = false
+
+
+    containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
     const notFullSreen = document.fullscreenElement === null;
     const { setDefaultPositionCameraAfterMouseMove, updateCameraRatioAfterResize, renderer, canvas, shape, isShapeInCenter } = shapeAndOwnProps;
-    changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, canvas, shape, isShapeInCenter });
+    changeBackgroundCanvasBetweenFullScreeenAndDefaultScreen({ renderer, canvas });
     setDefaultPositionCameraAfterMouseMove();
     updateCameraRatioAfterResize();
     if (notFullSreen) { 
