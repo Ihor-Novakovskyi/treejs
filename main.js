@@ -136,6 +136,8 @@ containerWithRenderShapesAndProps.forEach((shapeAndOwnProps) => {
     if (notFullSreen) { 
         console.log('resize');
         console.log('width', window.innerWidth, 'height', window.innerHeight);
+        console.log('width document', document.documentElement.clientWidth);
+        console.log('height document', document.documentElement.clientHeight);
         updatePropertyOfDistanceToCanvasElementAfterWindowResize(shapeAndOwnProps);
         setPositionShapeDuringScrolling(shapeAndOwnProps);
     }
