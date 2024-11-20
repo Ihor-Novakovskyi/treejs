@@ -1,52 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./style.css">
-    <title>Document</title>
-</head>
-<body>
-    <section class="container container-0">
-        <h1 class="shape-name animation-text">
-            Tetrahedron 
-        </h1>
-        <p>
-            A tetrahedron is a geometric shape in three-dimensional space that consists of four triangular faces, six straight edges, and four vertex corners.
-        </p>
-        <canvas class="canvas canvas-0"></canvas>
-    </section>
-    <section class="container container-1">
-        <h1 class="shape-name">
-            Cube 
-        </h1>
-        <p>
-         Cube is a polyhedron whose surface consists of six squares.
-        </p>
-        <canvas class="canvas canvas-1"></canvas>
-    </section>
-    <section class="container container-2">
-        <h1 class="shape-name">
-            Cylinder 
-        </h1>
-        <p>
-            Cylinder is a three-dimensional solid figure which has two identical circular bases joined by a curved surface at a particular distance from the center which is the height of the cylinder        </p>
-        <canvas class="canvas canvas-2"></canvas>
-    </section>
-    <section class="container container-3">
-        <h1 class="shape-name">
-            Torus
-        </h1>
-        <p>
-            Torus - the surface of sound receives rotation of the generating circle around an axis that is concentrated in the plane of this circle and does not intersect it.
-        </p>
-        <canvas class="canvas canvas-3"></canvas>
-    </section>
-    <div class="load-page">
-        <canvas class="load-animation"></canvas>
-    </div>
-   
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="./style.css" />
+		<title>Document</title>
+	</head>
+	<body>
+		<header class="menu">
+			<nav class="nav">
+				<ul class="nav__list">
+					<li class="nav__item">
+						<a href="#tetrahedron" class="nav__link">Tetrahedron</a>
+					</li>
 
-</body>
-<script src="./build/script.js"></script>
+					<li class="nav__item">
+						<a href="#cube" class="nav__link">Cube</a>
+					</li>
+
+					<li class="nav__item">
+						<a href="#cylinder" class="nav__link">Cylinder</a>
+					</li>
+
+					<li class="nav__item">
+						<a href="#torus" class="nav__link">Torus</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
+		<section class="container container-0" id="tetrahedron">
+			<h1 class="shape-name animation-text">Tetrahedron</h1>
+			<p>
+				A tetrahedron is a geometric shape in three-dimensional space that
+				consists of four triangular faces, six straight edges, and four vertex
+				corners.
+			</p>
+			<canvas class="canvas canvas-0"></canvas>
+		</section>
+		<section class="container container-1" id="cube">
+			<h1 class="shape-name">Cube</h1>
+			<p>Cube is a polyhedron whose surface consists of six squares.</p>
+			<canvas class="canvas canvas-1"></canvas>
+		</section>
+		<section class="container container-2" id="cylinder">
+			<h1 class="shape-name">Cylinder</h1>
+			<p>
+				Cylinder is a three-dimensional solid figure which has two identical
+				circular bases joined by a curved surface at a particular distance from
+				the center which is the height of the cylinder
+			</p>
+			<canvas class="canvas canvas-2"></canvas>
+		</section>
+		<section class="container container-3" id="torus">
+			<h1 class="shape-name">Torus</h1>
+			<p>
+				Torus - the surface of sound receives rotation of the generating circle
+				around an axis that is concentrated in the plane of this circle and does
+				not intersect it.
+			</p>
+			<canvas class="canvas canvas-3"></canvas>
+		</section>
+		<div class="load-page">
+			<canvas class="load-animation"></canvas>
+		</div>
+        <div class="button-wrapper">
+            <button class="go-back">
+                goUp
+            </button>
+        </div>
+		<div class="container-with-size-info">
+			
+		</div>
+	</body>
+	<script src="./build/script.js"></script>
 </html>
