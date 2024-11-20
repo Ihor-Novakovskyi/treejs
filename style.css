@@ -6,13 +6,16 @@ body{
     overflow-x: hidden;
     background-color: blue;
 }
+button{
+    padding: 0;
+    border: none;
+}
 body,
 p,
 h1 {
     margin: 0;
     padding: 0;
 }
-
 h1 {
     text-align: center;
 }
@@ -21,6 +24,56 @@ p {
     text-align: center;
     font-size: 14px;
 }
+a{  
+    text-decoration: none;
+}
+.menu{
+    height: 100vh;
+    padding: 32px;
+    background-color:violet;
+}
+.nav{
+    background-color: black;
+    border-radius: 8px;
+}
+.nav__list{
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    justify-content: center;
+    gap: 0px;
+}
+.nav__link{
+display: inline-block;
+color: white;
+padding: 16px 32px;
+transition: transform 300ms linear;
+}
+.button-wrapper{
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 24px;
+
+}
+.go-back{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: all 200ms linear;
+    cursor: pointer;
+}
+.nav__link:hover, .go-back:hover{
+transform: scale(1.5);
+color: greenyellow
+} 
 .canvas{
     position: absolute;
     display: block;
@@ -34,11 +87,11 @@ p {
     height: 100vh;
     width: 100%;
     margin: 0;
-
 }
 .load-page{
 position: fixed;
 top: 0;
+z-index: 10;
 }
 .container-1 {
     background-color: aqua;
@@ -52,4 +105,24 @@ top: 0;
 .container-3 {
     margin: 0;
     background-color: yellow;
+}
+@media(width >= 600){
+    body{
+        overflow: hidden;
+    }
+    .nav__list{
+        justify-content: space-between;
+        gap: 0px;
+    }
+    .nav__link{
+    padding: 12px 12px;
+    }
+}
+.container-with-size-info{
+    position: fixed;
+    top: 50%;
+    left: 20px;
+    background-color: white;
+
+    transform: translateY(-50%);
 }
